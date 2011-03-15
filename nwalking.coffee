@@ -18,9 +18,11 @@ Nwalking =
     ds.route {origin: center, destination: destination, travelMode: google.maps.DirectionsTravelMode.WALKING}, (r, s) ->
       return unless s is google.maps.DirectionsStatus.OK
       seconds = r.routes[0].legs[0].duration.value
-      if seconds < 300
+      if seconds < 240
+        # nop
+      else if seconds < 300
         new google.maps.Marker
-          position: destination
+          position: r.routes[0].legs[0].end_location
           map: map
           title: "#{Math.floor(seconds / 60)} min #{seconds % 60} sec"
         #Nwalking.putRoute(map, r)
@@ -32,18 +34,18 @@ Nwalking =
 $ ->
   center = new google.maps.LatLng 49.285178, -123.095241
   map = new google.maps.Map document.getElementById("main"),
-    zoom: 18
+    zoom: 17
     center: center
     mapTypeId: google.maps.MapTypeId.ROADMAP
-  marker = new google.maps.Marker
-    position: center
-    map: map
-    title: 'You are here'
-  n = 36
-  for i in [0...n]
-    e = 0.005
-    xy = {x: e * Math.sin(i * 2 * Math.PI / n), y: e * Math.cos(i * 2 * Math.PI / n)}
-    position = addxy(center, xy.x, xy.y)
-    Nwalking.lookupRoute center, position, map, 10
-
-  #$('#map').text 'hello'
+  google.maps.event.addListener map, 'click', (event) ->
+    center = event.latLng
+    marker = new google.maps.Marker
+      position: center
+      map: map
+      title: 'You are here'
+    n = 36
+    for i in [0..n]
+      e = 0.005
+      xy = {x: e * Math.sin(i * 2 * Math.PI / n), y: e * Math.cos(i * 2 * Math.PI / n)}
+      position = addxy(center, xy.x, xy.y)
+      Nwalking.lookupRoute center, position, map, 10
